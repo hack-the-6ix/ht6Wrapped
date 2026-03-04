@@ -4,11 +4,12 @@
 
 1. [Architecture Overview](#1-architecture-overview)
 2. [GitHub API Integration](#2-github-api-integration)
-3. [Database Schema](#3-database-schema)
-4. [Backend Implementation](#4-backend-implementation)
-5. [Frontend Implementation](#5-frontend-implementation)
-6. [Types & Interfaces](#6-types--interfaces)
-7. [Step-by-Step Build Order](#7-step-by-step-build-order)
+3. [Devpost Scraping](#3-devpost-scraping)
+4. [Database Schema](#4-database-schema)
+5. [Backend Implementation](#5-backend-implementation)
+6. [Frontend Implementation](#6-frontend-implementation)
+7. [Types & Interfaces](#7-types--interfaces)
+8. [Step-by-Step Build Order](#8-step-by-step-build-order)
 
 ---
 
@@ -93,7 +94,98 @@ Accept: application/vnd.github+json
 
 ---
 
-## 3. Database Schema
+## 3. Devpost Scraping
+
+### Overview
+
+Many hackathon projects are submitted on Devpost. Scraping a Devpost submission URL lets us pull **team members**, **technologies/languages used**, **project name**, **tagline**, and **description** without the user having to re-enter that data. This section defines what the backend needs to support Devpost scraping.
+
+**Approach:** Devpost does not expose a public API for submission data, so we **fetch the submission HTML** and **parse it** on the backend. Use a headless fetch plus an HTML parser (e.g. **cheerio** in Node/Bun) to extract structured data.
+
+### Data to Extract (target fields)
+
+| Field | Description | Notes |
+|-------|-------------|--------|
+| **Project name** | Submission title | Often matches or is close to repo/project name |
+| **Tagline** | Short one-liner | Optional |
+| **Description** | Long description / "What we built" | Plain text or HTML; can truncate for storage |
+| **Team members** | Names (and optionally usernames/links) | List of strings or `{ name, username?, url? }` |
+| **Technologies / languages** | Listed tech stack | e.g. "React", "TypeScript", "Python" — list of strings |
+| **Submission URL** | Canonical Devpost URL | For linking back and deduplication |
+| **Built at** | Hackathon name (if on page) | Optional, for display |
+
+Exact selectors depend on Devpost's current HTML; plan for **one service** that takes a URL and returns a single structured object so the rest of the app doesn't depend on DOM details.
+
+### Backend Requirements
+
+#### 1. Dependency
+
+- **HTML parser:** e.g. `cheerio` (`bun add cheerio` or `npm install cheerio`) to load HTML and query with CSS selectors. No headless browser needed for basic scraping.
+
+#### 2. Devpost URL handling
+
+- **Input:** Full submission URL, e.g. `https://devpost.com/software/my-project-name` or `https://devpost.com/software/slug?ref_content=...`.
+- **Validate** that the URL is a Devpost submission (host `devpost.com`, path like `/software/...`).
+- **Normalize** URL (strip query params if desired) before storing or using as a key.
+
+#### 3. Service: `services/devpost.ts`
+
+- **`scrapeSubmission(devpostUrl: string): Promise<DevpostSubmission>`**
+  - `fetch(devpostUrl)` with a normal `User-Agent` (and optional `Accept-Language`).
+  - Parse HTML with cheerio.
+  - Extract the target fields (project name, tagline, description, team members, technologies).
+  - Return a single typed object; throw or return a result type on parse/network errors.
+- **Error handling:** Invalid URL, non-200 response, or missing expected sections should yield a clear error (e.g. "Invalid Devpost URL", "Submission not found", "Parse failed") so the API can return 4xx/5xx and a message.
+
+#### 4. Types (e.g. in `types.ts` or `services/devpost.ts`)
+
+```ts
+interface DevpostSubmission {
+  url: string
+  projectName: string
+  tagline?: string
+  description?: string
+  teamMembers: { name: string; username?: string; profileUrl?: string }[]
+  technologies: string[]   // or "languages" if that's the only list on the page
+  builtAt?: string         // hackathon name if present
+}
+```
+
+Adjust field names to match what you actually extract (e.g. `languages` vs `technologies`).
+
+#### 5. API surface (optional but recommended)
+
+- **`GET /devpost?url=<encoded-devpost-url>`**
+  - Calls `scrapeSubmission`, returns JSON.
+  - Use for "preview" when the user pastes a Devpost link (e.g. in admin or before creating a project).
+- **`POST /wrapped` (or project creation)**
+  - Optionally accept a `devpostUrl` in the body; if present, scrape and merge team + tech data into the wrapped result or project metadata (see DB below).
+
+#### 6. Database (optional)
+
+- If you want to **store** Devpost data:
+  - Add columns to `projects` (e.g. `devpost_url`, `devpost_project_name`, `devpost_team_members jsonb`, `devpost_technologies jsonb`), or
+  - Add a small table e.g. `devpost_submissions (project_id, url, scraped_at, data jsonb)` and link to `projects`.
+- If you only use it at **generate time**, you can skip persistence and just pass scraped data through into the wrapped payload.
+
+#### 7. Politeness and robustness
+
+- **Rate limiting:** Don't hammer Devpost; e.g. at most one request per submission per minute, or a small in-memory queue per IP.
+- **Caching:** Consider caching scraped result by URL (in-memory or DB) for a short TTL (e.g. 5–15 minutes) to avoid re-scraping on refresh.
+- **User-Agent:** Set a descriptive `User-Agent` (e.g. "HackThe6ixWrapped/1.0") so Devpost can identify the client if needed.
+- **Timeouts:** Use a fetch timeout (e.g. 10s) so a slow or stuck page doesn't block the server.
+
+### Build order (high level)
+
+1. Add `cheerio`, types, and `DevpostSubmission` interface.
+2. Implement URL validation and `scrapeSubmission()` in `services/devpost.ts` (with real submission URLs to tune selectors).
+3. Add `GET /devpost?url=...` (or `POST /devpost` with body `{ url }`) and wire it in `index.ts`.
+4. (Optional) Extend DB schema and `POST /wrapped` or project creation to accept `devpostUrl` and store/merge scraped data.
+5. (Optional) Add simple in-memory cache and rate limit for Devpost requests.
+
+---
+
+## 4. Database Schema
 
 ### Table: `projects`
 
@@ -171,7 +263,7 @@ create index idx_wrapped_stats_project on wrapped_stats(project_id);
 
 ---
 
-## 4. Backend Implementation
+## 5. Backend Implementation
 
 ### File Structure
 
@@ -183,6 +275,7 @@ backend/src/
 │   └── wrapped.ts           # POST /wrapped, GET /wrapped/:shareId
 ├── services/
 │   ├── github.ts            # GitHub API client (list commits, get commit, get languages)
+│   ├── devpost.ts           # Devpost scraping (scrapeSubmission)
 │   └── analytics.ts         # Compute stats from raw commit data
 ├── lib/
 │   ├── supabase.ts          # Supabase client init
@@ -379,7 +472,7 @@ bun add @supabase/supabase-js date-fns date-fns-tz
 
 ---
 
-## 5. Frontend Implementation
+## 6. Frontend Implementation
 
 ### File Structure
 
@@ -416,7 +509,7 @@ Use `NEXT_PUBLIC_API_URL=http://localhost:3001` (env var).
 
 ---
 
-## 6. Types & Interfaces
+## 7. Types & Interfaces
 
 ```ts
 // backend/src/types.ts
@@ -475,11 +568,22 @@ interface CreateWrappedRequest {
   displayName: string;
   windowHours?: number;
 }
+
+// Devpost scraping (§3)
+interface DevpostSubmission {
+  url: string;
+  projectName: string;
+  tagline?: string;
+  description?: string;
+  teamMembers: { name: string; username?: string; profileUrl?: string }[];
+  technologies: string[];
+  builtAt?: string;
+}
 ```
 
 ---
 
-## 7. Step-by-Step Build Order
+## 8. Step-by-Step Build Order
 
 ### Phase 1: Database + Backend Foundation
 
@@ -491,14 +595,22 @@ interface CreateWrappedRequest {
 ### Phase 2: GitHub Service
 
 5. **GitHub client** — `services/github.ts`
-   - `listCommits()` with pagination (follow `Link` header)
-   - `getCodeFrequency()` with 202 retry logic
-   - `getRepoMeta()` for size/stars
-   - `getLanguages()`
-6. **Test manually** — hit a real repo to verify data shape
+   - (See [§2](#2-github-api-integration).)
+
+### Phase 2b: Devpost Scraping (optional)
+
+5b. **Devpost client** — `services/devpost.ts`
+   - Add `cheerio` dependency.
+   - URL validation for Devpost submission URLs.
+   - `scrapeSubmission(url)` — fetch HTML, parse with cheerio, return `DevpostSubmission` (project name, tagline, description, team members, technologies).
+   - Error handling and optional fetch timeout.
+6b. **Devpost route** — `GET /devpost?url=...` in `index.ts` or `routes/devpost.ts` for preview.
+7b. (Optional) Extend `projects` or add table for Devpost data; accept `devpostUrl` in `POST /wrapped` or project creation and merge scraped data.
+8b. (Optional) In-memory cache + rate limit for Devpost requests.
 
 ### Phase 3: Analytics + Routes
 
+6. **Test manually** — hit a real repo to verify data shape
 7. **Analytics service** — `services/analytics.ts`
    - Timestamp conversion to `America/Toronto`
    - Histogram computation
