@@ -185,6 +185,28 @@ Adjust field names to match what you actually extract (e.g. `languages` vs `tech
 
 ---
 
+## 3b. External Hackathon Database (Activities)
+
+### Overview
+
+Hack the 6ix has a separate Postgres database that tracks hacker activity/event attendance (e.g. workshops, ceremonies, mini-events). During wrapped stat generation, we query this external DB to fetch the list of activities each hacker participated in.
+
+### Approach
+
+- **At stat-generation time**, query the external hackathon Postgres DB for the hacker's attended activities.
+- **Cache the result** in `wrapped_stats.activities_participated` (jsonb array of activity name strings).
+- This avoids hitting the external DB on every page load and keeps all wrapped data in one place.
+- Activities don't change after the hackathon, so staleness is not a concern.
+
+### Implementation Notes
+
+- Add a second Postgres connection (e.g. `HACKATHON_DB_URL` env var) for the external DB.
+- Query should return activity/event names for a given hacker identifier (email, user ID, etc.).
+- Run this query as part of the `POST /wrapped` stat-generation flow, alongside GitHub and Devpost data collection.
+- If the external DB is unreachable, default to an empty array `[]` (the frontend already handles the zero-activities case).
+
+---
+
 ## 4. Database Schema
 
 ### Table: `projects`
@@ -220,6 +242,7 @@ Adjust field names to match what you actually extract (e.g. `languages` vs `tech
 | `commit_percentile` | `real` | 0.0–1.0, computed vs other wrapped results |
 | `language_percentiles` | `jsonb` | `{ "TypeScript": 0.85, ... }` per-language percentile vs others |
 | `size_percentile` | `real` | 0.0–1.0, repo size vs other wrapped results |
+| `activities_participated` | `jsonb` | `["Opening Ceremony", "MLH Workshop", ...]` — cached from external hackathon DB |
 | `created_at` | `timestamptz` | default `now()` |
 
 ### SQL Migration
@@ -255,6 +278,7 @@ create table wrapped_stats (
   commit_percentile real,
   language_percentiles jsonb not null default '{}',
   size_percentile real,
+  activities_participated jsonb not null default '[]',
   created_at timestamptz default now()
 );
 
