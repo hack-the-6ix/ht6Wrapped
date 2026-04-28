@@ -68,109 +68,120 @@ export default function Slide3({ peakCommitHourEst }: Slide3Props) {
         transition={{ duration: 4.2, delay: 0.08, ease: "easeOut" }}
       />
 
-      <motion.div
-        className="absolute left-1/2 top-[41%] z-20 h-[19cqh] w-[38cqw] rounded-full sm:top-1/2 sm:h-[19cqh] sm:w-[28cqw]"
-        style={{
-          transform: "translate(-50%, -50%)",
-          background:
-            "radial-gradient(circle, rgba(255, 232, 169, 0.52) 0%, rgba(255, 232, 169, 0.16) 42%, rgba(255, 232, 169, 0) 72%)",
-          filter: "blur(1.6cqh)",
-        }}
-        animate={{ opacity: [0.45, 0.62, 0.45], scale: [0.99, 1.02, 0.99] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      />
-
       <div
-        className="absolute bottom-[0.25cqh] left-[43.5%] z-30 w-[112cqw] max-w-none -translate-x-1/2 pointer-events-none sm:bottom-[-3cqh] sm:left-[52%] sm:w-[97.5cqw]"
+        className="absolute left-1/2 top-1/2 z-20 w-[124vw] max-w-none aspect-[4/3] -translate-x-1/2 -translate-y-1/2 sm:inset-0 sm:h-full sm:w-full sm:aspect-auto sm:translate-x-0 sm:translate-y-0"
+        style={{ containerType: "size" }}
       >
+        <motion.div
+          className="absolute left-1/2 top-1/2 z-20 h-[19cqh] w-[28cqw] rounded-full"
+          style={{
+            transform: "translate(-50%, -50%)",
+            background:
+              "radial-gradient(circle, rgba(255, 232, 169, 0.52) 0%, rgba(255, 232, 169, 0.16) 42%, rgba(255, 232, 169, 0) 72%)",
+            filter: "blur(1.6cqh)",
+          }}
+          animate={{ opacity: [0.45, 0.62, 0.45], scale: [0.99, 1.02, 0.99] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+
+        <div
+          className="absolute z-30 max-w-none pointer-events-none"
+          style={{
+            left: "52%",
+            bottom: "-3cqh",
+            width: "97.5cqw",
+            transform: "translateX(-50%)",
+          }}
+        >
+          <motion.img
+            src="/slides_figma_components/clocks_lamps3.svg"
+            alt=""
+            aria-hidden="true"
+            loading="eager"
+            decoding="async"
+            draggable={false}
+            className="block h-auto w-full"
+            style={{
+              filter: "drop-shadow(0 1.2cqh 1.5cqh rgba(75, 32, 4, 0.12))",
+              willChange: "transform, opacity",
+            }}
+            initial={{ opacity: 0, y: "1.2cqh" }}
+            animate={{
+              opacity: 1,
+              y: ["0.6cqh", "0cqh", "0.6cqh"],
+            }}
+            transition={{
+              opacity: { duration: 0.85, delay: 0.12 },
+              y: { duration: 11, repeat: Infinity, ease: "easeInOut" },
+            }}
+          />
+        </div>
+
         <motion.img
-          src="/slides_figma_components/clocks_lamps3.svg"
+          src="/slides_figma_components/lamps3.svg"
           alt=""
           aria-hidden="true"
           loading="eager"
           decoding="async"
           draggable={false}
-          className="block h-auto w-full"
+          className="absolute bottom-[11.7cqh] left-[64.1cqw] z-[35] w-[14.6cqw] pointer-events-none"
           style={{
-            filter: "drop-shadow(0 1.2cqh 1.5cqh rgba(75, 32, 4, 0.12))",
+            filter: "drop-shadow(0 1.1cqh 1.3cqh rgba(112, 62, 16, 0.16))",
             willChange: "transform, opacity",
           }}
           initial={{ opacity: 0, y: "1.2cqh" }}
           animate={{
-            opacity: 1,
+            opacity: 0.98,
             y: ["0.6cqh", "0cqh", "0.6cqh"],
+            rotate: [-0.8, 0.6, -0.8],
           }}
           transition={{
-            opacity: { duration: 0.85, delay: 0.12 },
-            y: { duration: 11, repeat: Infinity, ease: "easeInOut" },
+            opacity: { duration: 0.8, delay: 0.22 },
+            y: { duration: 8, repeat: Infinity, ease: "easeInOut" },
+            rotate: { duration: 8, repeat: Infinity, ease: "easeInOut" },
           }}
         />
+
+        <motion.div
+          className="absolute inset-0 z-40 grid place-items-center"
+          initial={{ opacity: 0, y: "1.8cqh" }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="flex max-w-[56%] flex-col items-center text-center">
+            <motion.span
+              className="text-[9.8cqw] font-bold leading-none"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontVariantNumeric: "tabular-nums",
+                letterSpacing: "-0.022em",
+                color: "#FFEFEA",
+                textShadow: "0 0 1.6cqh rgba(255, 255, 255, 0.46)",
+              }}
+            >
+              {timeLabel}
+            </motion.span>
+
+            <motion.p
+              className="mt-[1.1cqh] text-[2.95cqw] font-bold"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                lineHeight: 1.25,
+                letterSpacing: "-0.022em",
+                color: "#FFEFEA",
+                textShadow: "0 0 0.72cqh rgba(255, 255, 255, 0.54)",
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.7, delay: 1.1 }}
+            >
+              was your most
+              <br />
+              productive commit time
+            </motion.p>
+          </div>
+        </motion.div>
       </div>
-
-      <motion.img
-        src="/slides_figma_components/lamps3.svg"
-        alt=""
-        aria-hidden="true"
-        loading="eager"
-        decoding="async"
-        draggable={false}
-        className="absolute bottom-[11.4cqh] left-[54.2cqw] z-35 w-[19.5cqw] pointer-events-none sm:bottom-[11.7cqh] sm:left-[64.1cqw] sm:w-[14.6cqw]"
-        style={{
-          filter: "drop-shadow(0 1.1cqh 1.3cqh rgba(112, 62, 16, 0.16))",
-          willChange: "transform, opacity",
-        }}
-        initial={{ opacity: 0, y: "1.2cqh" }}
-        animate={{
-          opacity: 0.98,
-          y: ["0.6cqh", "0cqh", "0.6cqh"],
-          rotate: [-0.8, 0.6, -0.8],
-        }}
-        transition={{
-          opacity: { duration: 0.8, delay: 0.22 },
-          y: { duration: 8, repeat: Infinity, ease: "easeInOut" },
-          rotate: { duration: 8, repeat: Infinity, ease: "easeInOut" },
-        }}
-      />
-
-      <motion.div
-        className="absolute inset-x-0 top-[39%] z-40 flex -translate-y-1/2 justify-center px-[4cqw] sm:inset-0 sm:grid sm:translate-y-0 sm:place-items-center sm:px-0"
-        initial={{ opacity: 0, y: "1.8cqh" }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="flex max-w-[68%] flex-col items-center text-center sm:max-w-[56%]">
-          <motion.span
-            className="text-[10.8cqw] font-bold leading-none sm:text-[9.8cqw]"
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontVariantNumeric: "tabular-nums",
-              letterSpacing: "-0.022em",
-              color: "#FFEFEA",
-              textShadow: "0 0 1.6cqh rgba(255, 255, 255, 0.46)",
-            }}
-          >
-            {timeLabel}
-          </motion.span>
-
-          <motion.p
-            className="mt-[1.2cqh] text-[3.25cqw] font-bold sm:mt-[1.1cqh] sm:text-[2.95cqw]"
-            style={{
-              fontFamily: "Inter, sans-serif",
-              lineHeight: 1.25,
-              letterSpacing: "-0.022em",
-              color: "#FFEFEA",
-              textShadow: "0 0 0.72cqh rgba(255, 255, 255, 0.54)",
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.7, delay: 1.1 }}
-          >
-            was your most
-            <br />
-            productive commit time
-          </motion.p>
-        </div>
-      </motion.div>
     </div>
   );
 }
