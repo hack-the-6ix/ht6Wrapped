@@ -16,7 +16,11 @@ const MOCK_DATA = {
     commitPercentile: 0.85,
     languages: { TypeScript: 45000, CSS: 12000 },
     repoSizeKb: 2340,
-    activitiesParticipated: ["Opening Ceremony", "MLH Workshop"],
+    activitiesParticipated: [
+      "Opening Ceremony",
+      "AI Builder Workshop",
+      "Midnight Minigames",
+    ],
   },
 };
 

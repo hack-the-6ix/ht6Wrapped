@@ -44,6 +44,7 @@ wrappedRoute.post('/', async (c) => {
   ])
 
   const baseStats = computeStats(commits, codeFreq, languages, repoMeta, windowStart, windowEnd)
+  const activitiesParticipated: string[] = []
 
   const { data: inserted, error: insertError } = await supabase
     .from('wrapped_stats')
@@ -67,6 +68,7 @@ wrappedRoute.post('/', async (c) => {
       commit_percentile: 0,
       language_percentiles: {},
       size_percentile: 0,
+      activities_participated: activitiesParticipated,
     })
     .select('id')
     .single()
@@ -88,7 +90,7 @@ wrappedRoute.post('/', async (c) => {
     })
     .eq('id', shareId)
 
-  const stats = { ...baseStats, ...percentiles }
+  const stats = { ...baseStats, ...percentiles, activitiesParticipated }
 
   return c.json({ shareId, stats })
 })
@@ -116,6 +118,7 @@ wrappedRoute.get('/:shareId', async (c) => {
       commit_percentile,
       language_percentiles,
       size_percentile,
+      activities_participated,
       projects (
         id,
         name,
@@ -159,6 +162,9 @@ wrappedRoute.get('/:shareId', async (c) => {
       commitPercentile: data.commit_percentile,
       languagePercentiles: data.language_percentiles,
       sizePercentile: data.size_percentile,
+      activitiesParticipated: Array.isArray(data.activities_participated)
+        ? (data.activities_participated as string[])
+        : [],
     },
   })
 })

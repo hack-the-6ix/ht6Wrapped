@@ -2,11 +2,11 @@
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect } from "react";
 
-interface Slide2LinesProps {
+interface Slide2Props {
   linesAdded: number;
 }
 
-export default function Slide2Lines({ linesAdded }: Slide2LinesProps) {
+export default function Slide2({ linesAdded }: Slide2Props) {
   const count = useMotionValue(0);
   const rounded = useTransform(count, (v) => Math.round(v).toLocaleString());
 

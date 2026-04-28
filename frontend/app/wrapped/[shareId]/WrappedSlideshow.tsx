@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import SlideContainer from "@/app/components/slides/SlideContainer";
-import Slide1Start from "@/app/components/slides/Slide1Start";
-import Slide2Lines from "@/app/components/slides/Slide2Lines";
+import Slide1 from "@/app/components/slides/Slide1";
+import Slide2 from "@/app/components/slides/Slide2";
+import Slide3 from "@/app/components/slides/Slide3";
+import Slide4 from "@/app/components/slides/Slide4";
+import SlideshowFrame from "@/app/components/slideshow/SlideshowFrame";
 
 interface WrappedData {
   shareId: string;
@@ -32,8 +34,13 @@ export default function WrappedSlideshow({ data }: Props) {
   const [current, setCurrent] = useState(0);
 
   const slides = [
-    <Slide1Start key="start" onEnter={() => setCurrent(1)} />,
-    <Slide2Lines key="lines" linesAdded={data.stats.linesAdded} />,
+    <Slide1 key="start" onEnter={() => setCurrent(1)} />,
+    <Slide2 key="lines" linesAdded={data.stats.linesAdded} />,
+    <Slide3 key="commit-time" peakCommitHourEst={data.stats.peakCommitHourEst} />,
+    <Slide4
+      key="activities"
+      activitiesParticipated={data.stats.activitiesParticipated}
+    />,
   ];
 
   const total = slides.length;
@@ -44,14 +51,14 @@ export default function WrappedSlideshow({ data }: Props) {
         className="relative shadow-2xl"
         style={{ width: "min(100vw, 800px)", aspectRatio: "4/3" }}
       >
-        <SlideContainer
+        <SlideshowFrame
           current={current}
           total={total}
           onPrev={() => setCurrent((c) => Math.max(0, c - 1))}
           onNext={() => setCurrent((c) => Math.min(total - 1, c + 1))}
         >
           {slides[current]}
-        </SlideContainer>
+        </SlideshowFrame>
       </div>
     </div>
   );

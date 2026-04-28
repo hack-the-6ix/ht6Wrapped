@@ -1,15 +1,24 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import ProgressDots from "@/app/components/ui/ProgressDots";
-import SlideChrome from "@/app/components/ui/SlideChrome";
-import Slide1Start from "@/app/components/slides/Slide1Start";
-import Slide2Lines from "@/app/components/slides/Slide2Lines";
+import SlideshowControls from "@/app/components/slideshow/SlideshowControls";
+import SlideshowProgress from "@/app/components/slideshow/SlideshowProgress";
+import Slide1 from "@/app/components/slides/Slide1";
+import Slide2 from "@/app/components/slides/Slide2";
+import Slide3 from "@/app/components/slides/Slide3";
+import Slide4 from "@/app/components/slides/Slide4";
 
 // Mock stats for previewing slides during development
 const MOCK_STATS = {
   linesAdded: 4521,
+  peakCommitHourEst: 0,
+  activitiesParticipated: [
+    "Opening Ceremony",
+    "AI Builder Workshop",
+    "Midnight Minigames",
+  ],
 };
 
 const TOTAL_SLIDES = 8;
@@ -47,61 +56,74 @@ export default function LandingPage() {
   }
 
   const slides: React.ReactNode[] = [
-    // Slide 0 — intro
-    <div key="start" className="relative w-full h-full flex items-center justify-center overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #C85A5A 0%, #B86B4A 50%, #C4784A 100%)" }}
-    >
-      <img src="/slides_figma_components/vines1.svg" alt=""
-        className="absolute bottom-0 left-0 w-full pointer-events-none z-0"
-      />
-      <div className="relative z-10 flex items-center gap-6">
-        <img src="/slides_figma_components/ht6.svg" alt="HT6"
-          className="pointer-events-none flex-shrink-0"
-          style={{ height: "clamp(160px, 42vh, 340px)" }}
-        />
-        <div className="relative flex-shrink-0" style={{ width: "clamp(180px, 26vw, 360px)" }}>
-          <img src="/slides_figma_components/mirror1.svg" alt="mirror" className="w-full" />
-          {!showForm ? (
-            <button onClick={() => setShowForm(true)}
-              className="absolute inset-0 m-auto w-fit h-fit px-8 py-2.5 rounded-full font-semibold text-white text-sm transition-transform hover:scale-105 active:scale-95"
-              style={{ background: "#3D8B6E", boxShadow: "0 4px 20px rgba(0,0,0,0.3)" }}
+    // Slide 1 — intro
+    <Slide1
+      key="start"
+      centerContent={
+        !showForm ? (
+          <motion.button
+            onClick={() => setShowForm(true)}
+            className="w-fit h-fit px-8 py-2.5 rounded-full font-semibold text-white text-sm"
+            style={{ background: "#4CA58A", boxShadow: "0 10px 24px rgba(32, 73, 62, 0.28)" }}
+            initial={{ opacity: 0, y: 10, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.45 }}
+          >
+            Enter
+          </motion.button>
+        ) : (
+          <motion.form
+            onSubmit={handleSubmit}
+            className="flex w-full flex-col items-center justify-center gap-2"
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <input
+              type="text"
+              placeholder="Project ID"
+              value={projectId}
+              onChange={(e) => setProjectId(e.target.value)}
+              className="w-full px-3 py-1.5 rounded-lg text-xs text-gray-800 bg-white/90 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Your name / team name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="w-full px-3 py-1.5 rounded-lg text-xs text-gray-800 bg-white/90 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              required
+            />
+            {error && <p className="text-red-200 text-xs text-center">{error}</p>}
+            <motion.button
+              type="submit"
+              disabled={loading}
+              className="mt-1 px-6 py-1.5 rounded-full font-semibold text-white text-xs disabled:opacity-60"
+              style={{ background: "#4CA58A", boxShadow: "0 10px 24px rgba(32, 73, 62, 0.28)" }}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.98 }}
             >
-              Enter
-            </button>
-          ) : (
-            <form onSubmit={handleSubmit}
-              className="absolute inset-0 m-auto flex flex-col items-center justify-center gap-2 px-6"
-              style={{ width: "70%", maxHeight: "60%" }}
-            >
-              <input type="text" placeholder="Project ID" value={projectId}
-                onChange={(e) => setProjectId(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-lg text-xs text-gray-800 bg-white/90 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                required
-              />
-              <input type="text" placeholder="Your name / team name" value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-lg text-xs text-gray-800 bg-white/90 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                required
-              />
-              {error && <p className="text-red-200 text-xs text-center">{error}</p>}
-              <button type="submit" disabled={loading}
-                className="mt-1 px-6 py-1.5 rounded-full font-semibold text-white text-xs disabled:opacity-60 transition-transform hover:scale-105"
-                style={{ background: "#3D8B6E" }}
-              >
-                {loading ? "Loading…" : "Go →"}
-              </button>
-            </form>
-          )}
-        </div>
-        <img src="/slides_figma_components/2026.svg" alt="2026"
-          className="pointer-events-none flex-shrink-0"
-          style={{ height: "clamp(160px, 42vh, 340px)" }}
-        />
-      </div>
-    </div>,
+              {loading ? "Loading…" : "Go →"}
+            </motion.button>
+          </motion.form>
+        )
+      }
+    />,
 
-    // Slide 1 — lines of code
-    <Slide2Lines key="lines" linesAdded={MOCK_STATS.linesAdded} />,
+    // Slide 2 — lines of code
+    <Slide2 key="lines" linesAdded={MOCK_STATS.linesAdded} />,
+
+    // Slide 3 — peak commit time
+    <Slide3 key="commit-time" peakCommitHourEst={MOCK_STATS.peakCommitHourEst} />,
+
+    // Slide 4 — activities participated in
+    <Slide4
+      key="activities"
+      activitiesParticipated={MOCK_STATS.activitiesParticipated}
+    />,
 
     // Add future slides here as they're built
   ];
@@ -119,11 +141,11 @@ export default function LandingPage() {
 
       {/* Progress dots */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
-        <ProgressDots current={current} total={TOTAL_SLIDES} />
+        <SlideshowProgress current={current} total={TOTAL_SLIDES} />
       </div>
 
       {/* Chrome: share + nav */}
-      <SlideChrome
+      <SlideshowControls
         onPrev={prev}
         onNext={next}
         prevDisabled={current === 0}

@@ -1,9 +1,9 @@
-interface ProgressDotsProps {
+interface SlideshowProgressProps {
   current: number;
   total: number;
 }
 
-export default function ProgressDots({ current, total }: ProgressDotsProps) {
+export default function SlideshowProgress({ current, total }: SlideshowProgressProps) {
   return (
     <div className="flex items-center gap-1.5">
       {Array.from({ length: total }).map((_, i) => (

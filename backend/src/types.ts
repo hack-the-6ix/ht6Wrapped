@@ -29,6 +29,7 @@ export interface WrappedStats {
   commitPercentile: number
   languagePercentiles: Record<string, number>
   sizePercentile: number
+  activitiesParticipated: string[]
 }
 
 export interface WrappedResult {

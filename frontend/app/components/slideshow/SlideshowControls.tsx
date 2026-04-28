@@ -1,15 +1,20 @@
-interface SlideChromeProps {
+interface SlideshowControlsProps {
   onPrev: (() => void) | undefined;
   onNext: (() => void) | undefined;
   prevDisabled?: boolean;
   nextDisabled?: boolean;
 }
 
-export default function SlideChrome({ onPrev, onNext, prevDisabled, nextDisabled }: SlideChromeProps) {
+export default function SlideshowControls({
+  onPrev,
+  onNext,
+  prevDisabled,
+  nextDisabled,
+}: SlideshowControlsProps) {
   return (
     <>
       {/* Share icon — bottom left */}
-      <button className="absolute bottom-6 left-6 z-20 text-white/80 hover:text-white">
+      <button className="absolute bottom-6 left-6 z-50 text-white/80 hover:text-white">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
           <polyline points="16 6 12 2 8 6" />
@@ -18,7 +23,7 @@ export default function SlideChrome({ onPrev, onNext, prevDisabled, nextDisabled
       </button>
 
       {/* Nav arrows — bottom right */}
-      <div className="absolute bottom-6 right-6 z-20 flex items-center gap-2">
+      <div className="absolute bottom-6 right-6 z-50 flex items-center gap-2">
         <button
           onClick={onPrev}
           disabled={prevDisabled}
