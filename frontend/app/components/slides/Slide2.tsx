@@ -18,7 +18,10 @@ export default function Slide2({ linesAdded }: Slide2Props) {
   return (
     <div
       className="relative w-full h-full flex items-center justify-center overflow-hidden"
-      style={{ background: "linear-gradient(to right, #ce6d53, #ce9f37 176.93%)" }}
+      style={{
+        background: "linear-gradient(to right, #ce6d53, #ce9f37 176.93%)",
+        containerType: "size",
+      }}
     >
       {/* Star background */}
       <motion.img
@@ -34,8 +37,7 @@ export default function Slide2({ linesAdded }: Slide2Props) {
       <motion.img
         src="/slides_figma_components/bread2.svg"
         alt=""
-        className="absolute pointer-events-none z-10"
-        style={{ height: "70", top: "45%", left: "49%", translateX: "-50%", translateY: "-50%" }}
+        className="absolute left-1/2 top-[48%] z-10 h-[46vh] min-h-[320px] max-h-[460px] -translate-x-1/2 -translate-y-1/2 pointer-events-none sm:top-[48%] sm:h-[39vh] sm:min-h-[320px] sm:max-h-[560px]"
         initial={{ opacity: 0, y: -60 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.15, ease: [0.34, 1.56, 0.64, 1] }}
@@ -45,8 +47,7 @@ export default function Slide2({ linesAdded }: Slide2Props) {
       <motion.img
         src="/slides_figma_components/food2.svg"
         alt=""
-        className="absolute pointer-events-none z-10"
-        style={{ width: "100%", top: "50%", left: "50%", translateX: "-50%", translateY: "-50%" }}
+        className="absolute left-1/2 top-[49%] z-10 w-[104%] max-w-none -translate-x-1/2 -translate-y-1/2 pointer-events-none sm:top-[50%] sm:w-full"
         initial={{ opacity: 0, scale: 0.88 }}
         animate={{ opacity: 1, scale: 1, y: [0, -14, 0] }}
         transition={{
@@ -58,8 +59,7 @@ export default function Slide2({ linesAdded }: Slide2Props) {
 
       {/* Center stat */}
       <motion.div
-        className="relative z-20 flex flex-col items-center text-center"
-        style={{ width: "55%" }}
+        className="relative z-20 flex w-[80%] max-w-[330px] flex-col items-center px-2 text-center sm:w-[55%] sm:max-w-none"
         initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.55, ease: [0.34, 1.56, 0.64, 1] }}
@@ -68,7 +68,7 @@ export default function Slide2({ linesAdded }: Slide2Props) {
           className="font-bold leading-none"
           style={{
             fontFamily: "Inter, sans-serif",
-            fontSize: "clamp(2.5rem, 9vw, 6rem)",
+            fontSize: "clamp(3rem, 15vw, 6rem)",
             color: "#ffefea",
             letterSpacing: "-0.022em",
             textShadow: "0 0 14.9px rgba(255,255,255,0.63)",
@@ -80,7 +80,7 @@ export default function Slide2({ linesAdded }: Slide2Props) {
           className="font-bold mt-2"
           style={{
             fontFamily: "Inter, sans-serif",
-            fontSize: "clamp(0.75rem, 1.8vw, 1.1rem)",
+            fontSize: "clamp(0.85rem, 3.2vw, 1.1rem)",
             color: "#ffefea",
             letterSpacing: "-0.022em",
             textShadow: "0 0 4.9px rgba(255,255,255,0.63)",

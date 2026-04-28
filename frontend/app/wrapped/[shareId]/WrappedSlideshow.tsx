@@ -46,10 +46,13 @@ export default function WrappedSlideshow({ data }: Props) {
   const total = slides.length;
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-neutral-100 p-4">
+    <div className="flex min-h-[100svh] items-center justify-center bg-neutral-100 p-2.5 sm:min-h-screen sm:p-4">
       <div
         className="relative shadow-2xl"
-        style={{ width: "min(100vw, 800px)", aspectRatio: "4/3" }}
+        style={{
+          width: "min(calc(100vw - 1rem), calc((100svh - 1rem) * 4 / 3), 800px)",
+          aspectRatio: "4/3",
+        }}
       >
         <SlideshowFrame
           current={current}

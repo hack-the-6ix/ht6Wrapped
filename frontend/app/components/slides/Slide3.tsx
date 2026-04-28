@@ -61,22 +61,16 @@ export default function Slide3({ peakCommitHourEst }: Slide3Props) {
         loading="eager"
         decoding="async"
         draggable={false}
-        className="absolute left-0 z-10 w-full pointer-events-none object-fill"
-        style={{
-          top: "-4.5cqh",
-          height: "108cqh",
-          opacity: 0.9,
-        }}
+        className="absolute left-1/2 top-0 z-10 h-[100cqh] w-auto max-w-none -translate-x-1/2 pointer-events-none sm:left-0 sm:top-[-4.5cqh] sm:h-[108cqh] sm:w-full sm:translate-x-0 sm:object-fill"
+        style={{ opacity: 0.9 }}
         initial={{ opacity: 0 }}
         animate={{ opacity: [0.82, 0.9, 0.84] }}
         transition={{ duration: 4.2, delay: 0.08, ease: "easeOut" }}
       />
 
       <motion.div
-        className="absolute left-1/2 top-1/2 z-20 rounded-full"
+        className="absolute left-1/2 top-[41%] z-20 h-[19cqh] w-[38cqw] rounded-full sm:top-1/2 sm:h-[19cqh] sm:w-[28cqw]"
         style={{
-          width: "28cqw",
-          height: "19cqh",
           transform: "translate(-50%, -50%)",
           background:
             "radial-gradient(circle, rgba(255, 232, 169, 0.52) 0%, rgba(255, 232, 169, 0.16) 42%, rgba(255, 232, 169, 0) 72%)",
@@ -87,13 +81,7 @@ export default function Slide3({ peakCommitHourEst }: Slide3Props) {
       />
 
       <div
-        className="absolute z-30 max-w-none pointer-events-none"
-        style={{
-          left: "52%",
-          bottom: "-3cqh",
-          width: "97.5cqw",
-          transform: "translateX(-50%)",
-        }}
+        className="absolute bottom-[0.25cqh] left-[43.5%] z-30 w-[112cqw] max-w-none -translate-x-1/2 pointer-events-none sm:bottom-[-3cqh] sm:left-[52%] sm:w-[97.5cqw]"
       >
         <motion.img
           src="/slides_figma_components/clocks_lamps3.svg"
@@ -126,11 +114,8 @@ export default function Slide3({ peakCommitHourEst }: Slide3Props) {
         loading="eager"
         decoding="async"
         draggable={false}
-        className="absolute z-35 pointer-events-none"
+        className="absolute bottom-[11.4cqh] left-[54.2cqw] z-35 w-[19.5cqw] pointer-events-none sm:bottom-[11.7cqh] sm:left-[64.1cqw] sm:w-[14.6cqw]"
         style={{
-          left: "64.1cqw",
-          bottom: "11.7cqh",
-          width: "14.6cqw",
           filter: "drop-shadow(0 1.1cqh 1.3cqh rgba(112, 62, 16, 0.16))",
           willChange: "transform, opacity",
         }}
@@ -148,20 +133,16 @@ export default function Slide3({ peakCommitHourEst }: Slide3Props) {
       />
 
       <motion.div
-        className="absolute inset-0 z-40 grid place-items-center"
+        className="absolute inset-x-0 top-[39%] z-40 flex -translate-y-1/2 justify-center px-[4cqw] sm:inset-0 sm:grid sm:translate-y-0 sm:place-items-center sm:px-0"
         initial={{ opacity: 0, y: "1.8cqh" }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div
-          className="flex flex-col items-center text-center"
-          style={{ width: "fit-content", maxWidth: "56%" }}
-        >
+        <div className="flex max-w-[68%] flex-col items-center text-center sm:max-w-[56%]">
           <motion.span
-            className="font-bold leading-none"
+            className="text-[10.8cqw] font-bold leading-none sm:text-[9.8cqw]"
             style={{
               fontFamily: "Inter, sans-serif",
-              fontSize: "9.8cqw",
               fontVariantNumeric: "tabular-nums",
               letterSpacing: "-0.022em",
               color: "#FFEFEA",
@@ -172,10 +153,9 @@ export default function Slide3({ peakCommitHourEst }: Slide3Props) {
           </motion.span>
 
           <motion.p
-            className="mt-[1.1cqh] font-bold"
+            className="mt-[1.2cqh] text-[3.25cqw] font-bold sm:mt-[1.1cqh] sm:text-[2.95cqw]"
             style={{
               fontFamily: "Inter, sans-serif",
-              fontSize: "2.95cqw",
               lineHeight: 1.25,
               letterSpacing: "-0.022em",
               color: "#FFEFEA",

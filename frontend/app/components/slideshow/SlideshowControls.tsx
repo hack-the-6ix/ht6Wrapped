@@ -14,7 +14,10 @@ export default function SlideshowControls({
   return (
     <>
       {/* Share icon — bottom left */}
-      <button className="absolute bottom-6 left-6 z-50 text-white/80 hover:text-white">
+      <button
+        aria-label="Share"
+        className="absolute bottom-3 left-3 z-50 flex h-11 w-11 items-center justify-center rounded-full text-white/80 transition-colors hover:text-white touch-manipulation sm:bottom-6 sm:left-6"
+      >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
           <polyline points="16 6 12 2 8 6" />
@@ -23,18 +26,20 @@ export default function SlideshowControls({
       </button>
 
       {/* Nav arrows — bottom right */}
-      <div className="absolute bottom-6 right-6 z-50 flex items-center gap-2">
+      <div className="absolute bottom-3 right-3 z-50 flex items-center gap-1 sm:bottom-6 sm:right-6 sm:gap-2">
         <button
+          aria-label="Previous slide"
           onClick={onPrev}
           disabled={prevDisabled}
-          className="text-white/80 hover:text-white disabled:opacity-30 text-2xl px-1 leading-none"
+          className="flex h-11 w-11 items-center justify-center text-[1.9rem] leading-none text-white/80 transition-colors hover:text-white disabled:opacity-30 touch-manipulation sm:text-2xl"
         >
           ‹
         </button>
         <button
+          aria-label="Next slide"
           onClick={onNext}
           disabled={nextDisabled}
-          className="text-white/80 hover:text-white disabled:opacity-30 text-2xl px-1 leading-none"
+          className="flex h-11 w-11 items-center justify-center text-[1.9rem] leading-none text-white/80 transition-colors hover:text-white disabled:opacity-30 touch-manipulation sm:text-2xl"
         >
           ›
         </button>

@@ -59,7 +59,7 @@ export default function Slide4({
 
   return (
     <div
-      className="relative w-full h-full overflow-hidden"
+      className="relative w-full h-full overflow-hidden pointer-events-none"
       style={{
         background:
           "linear-gradient(103deg, #D0A63E 0%, #BFB053 31%, #95AA6D 67%, #75A281 100%)",
@@ -81,7 +81,7 @@ export default function Slide4({
       <motion.img
         src="/slides_figma_components/bg4.svg"
         alt=""
-        className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+        className="absolute left-1/2 top-[5%] h-auto w-[132%] max-w-none -translate-x-1/2 pointer-events-none sm:inset-0 sm:h-full sm:w-full sm:translate-x-0 sm:object-cover"
         initial={{ opacity: 0, scale: 1.02 }}
         animate={{
           opacity: [0.52, 0.72, 0.58],
@@ -100,7 +100,7 @@ export default function Slide4({
       <motion.img
         src="/slides_figma_components/drink4.svg"
         alt=""
-        className="absolute inset-0 h-full w-full object-cover pointer-events-none z-10"
+        className="absolute left-[63%] top-[4%] z-10 h-auto w-[124%] max-w-none -translate-x-1/2 pointer-events-none sm:inset-0 sm:h-full sm:w-full sm:translate-x-0 sm:object-cover"
         initial={{ opacity: 0, scale: 1.03, x: -16 }}
         animate={{
           opacity: 1,
@@ -117,7 +117,7 @@ export default function Slide4({
       />
 
       <motion.div
-        className="absolute left-[4.8%] bottom-[13%] z-20 origin-left -rotate-90"
+        className="absolute left-[6.4%] bottom-[12.5%] z-20 origin-left -rotate-90 sm:left-[4.8%] sm:bottom-[13%]"
         initial={{ opacity: 0, x: -14 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.65, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
@@ -140,10 +140,12 @@ export default function Slide4({
       </motion.div>
 
       <motion.div
-        className="absolute left-1/2 top-1/2 z-20 rounded-full"
+        className={`absolute left-1/2 top-1/2 z-20 rounded-full ${
+          hasActivities
+            ? "h-[52%] w-[72%] sm:h-[54%] sm:w-[48%]"
+            : "h-[34%] w-[78%] sm:h-[30%] sm:w-[58%]"
+        }`}
         style={{
-          width: hasActivities ? "48%" : "58%",
-          height: hasActivities ? "54%" : "30%",
           transform: "translate(-50%, -50%)",
           background:
             "radial-gradient(circle, rgba(255, 250, 227, 0.13) 0%, rgba(255, 250, 227, 0.06) 28%, rgba(255, 250, 227, 0) 70%)",
@@ -155,7 +157,7 @@ export default function Slide4({
 
       {hasActivities ? (
         <div className="absolute inset-0 z-30 flex items-center justify-center">
-          <div className="flex w-[53%] max-w-[500px] min-w-[320px] flex-col items-center gap-14">
+          <div className="flex w-[74%] max-w-[360px] flex-col items-center gap-10 sm:w-[53%] sm:max-w-[500px] sm:min-w-[320px] sm:gap-14">
             {activities.map((activity, index) => (
               <motion.div
                 key={`${activity.title}-${index}`}
@@ -178,7 +180,7 @@ export default function Slide4({
                     ease: "easeInOut",
                   }}
                 >
-                  <div style={TITLE_TEXT_STYLE}>{activity.title}</div>
+                  <div className="px-2" style={TITLE_TEXT_STYLE}>{activity.title}</div>
                   <div className="mt-2.5" style={HOST_TEXT_STYLE}>{activity.host}</div>
                 </motion.div>
               </motion.div>
@@ -188,7 +190,7 @@ export default function Slide4({
       ) : (
         <div className="absolute inset-0 z-30 flex items-center justify-center px-8">
           <motion.div
-            className="w-[62%] max-w-[620px] text-center"
+            className="w-[78%] max-w-[460px] text-center sm:w-[62%] sm:max-w-[620px]"
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.65, delay: 0.44, ease: [0.22, 1, 0.36, 1] }}

@@ -63,7 +63,7 @@ export default function LandingPage() {
         !showForm ? (
           <motion.button
             onClick={() => setShowForm(true)}
-            className="w-fit h-fit px-8 py-2.5 rounded-full font-semibold text-white text-sm"
+            className="h-fit w-fit rounded-full px-6 py-2 text-xs font-semibold text-white sm:px-8 sm:py-2.5 sm:text-sm"
             style={{ background: "#4CA58A", boxShadow: "0 10px 24px rgba(32, 73, 62, 0.28)" }}
             initial={{ opacity: 0, y: 10, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -76,7 +76,7 @@ export default function LandingPage() {
         ) : (
           <motion.form
             onSubmit={handleSubmit}
-            className="flex w-full flex-col items-center justify-center gap-2"
+            className="flex w-full max-w-[170px] flex-col items-center justify-center gap-1.5 sm:max-w-none sm:gap-2"
             initial={{ opacity: 0, y: 12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -86,7 +86,7 @@ export default function LandingPage() {
               placeholder="Project ID"
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
-              className="w-full px-3 py-1.5 rounded-lg text-xs text-gray-800 bg-white/90 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full rounded-lg bg-white/90 px-3 py-1.5 text-[11px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:text-xs"
               required
             />
             <input
@@ -94,14 +94,14 @@ export default function LandingPage() {
               placeholder="Your name / team name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full px-3 py-1.5 rounded-lg text-xs text-gray-800 bg-white/90 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full rounded-lg bg-white/90 px-3 py-1.5 text-[11px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:text-xs"
               required
             />
-            {error && <p className="text-red-200 text-xs text-center">{error}</p>}
+            {error && <p className="text-center text-[10px] text-red-200 sm:text-xs">{error}</p>}
             <motion.button
               type="submit"
               disabled={loading}
-              className="mt-1 px-6 py-1.5 rounded-full font-semibold text-white text-xs disabled:opacity-60"
+              className="mt-1 rounded-full px-5 py-1.5 text-[11px] font-semibold text-white disabled:opacity-60 sm:px-6 sm:text-xs"
               style={{ background: "#4CA58A", boxShadow: "0 10px 24px rgba(32, 73, 62, 0.28)" }}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.98 }}
@@ -129,7 +129,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
+    <div className="relative h-[100svh] min-h-[100svh] w-screen overflow-hidden">
       {/* Render current slide */}
       <div className="w-full h-full">
         {slides[current] ?? (
@@ -140,7 +140,7 @@ export default function LandingPage() {
       </div>
 
       {/* Progress dots */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 sm:top-4">
         <SlideshowProgress current={current} total={TOTAL_SLIDES} />
       </div>
 

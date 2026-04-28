@@ -25,7 +25,7 @@ export default function SlideshowFrame({
       {children}
 
       {/* Progress dots */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40">
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 sm:top-4">
         <SlideshowProgress current={current} total={total} />
       </div>
 
@@ -33,7 +33,8 @@ export default function SlideshowFrame({
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-50 text-white/80 hover:text-white text-xl leading-none"
+          aria-label="Close slideshow"
+          className="absolute top-3 right-3 z-50 flex h-11 w-11 items-center justify-center text-white/80 transition-colors hover:text-white text-xl leading-none touch-manipulation sm:top-4 sm:right-4"
         >
           ✕
         </button>
