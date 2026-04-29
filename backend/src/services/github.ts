@@ -58,8 +58,8 @@ export interface CommitListItem {
 export async function listCommits(
     owner: string,
     repo: string,
-    since: string,
-    until: string,
+    since?: string,
+    until?: string,
     author?: string,
 ): Promise<CommitListItem[]> {
     const commits: CommitListItem[] = []
@@ -67,8 +67,8 @@ export async function listCommits(
 
     while (true) {
         const url = new URL(`https://api.github.com/repos/${owner}/${repo}/commits`)
-        url.searchParams.set('since', since)
-        url.searchParams.set('until', until)
+        if (since) url.searchParams.set('since', since)
+        if (until) url.searchParams.set('until', until)
         url.searchParams.set('per_page', '100')
         url.searchParams.set('page', String(page))
         if (author) url.searchParams.set('author', author)
@@ -106,39 +106,30 @@ export async function listCommits(
     return commits
 }
 
-export async function getCodeFrequency(owner: string, repo: string) {
-    const url = `https://api.github.com/repos/${owner}/${repo}/stats/code_frequency`
-  
-    for (let attempt = 0; attempt < 15; attempt++) {
-      const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-          Accept: 'application/vnd.github+json',
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      })
+export async function getCommitLineStats(
+    owner: string,
+    repo: string,
+    shas: string[],
+): Promise<{ additions: number; deletions: number }> {
+    let additions = 0
+    let deletions = 0
 
-      if (res.status === 202) {
-        await res.text()          // drain the body so the connection is released
-        await sleep(5000)
-        continue
-      }
-  
-      if (!res.ok) {
-        throw new Error(`GitHub code_frequency failed: ${res.status}`)
-      }
-  
-      const weeks = (await res.json()) as [number, number, number][]
-      let additions = 0
-      let deletions = 0
-  
-      for (const [, add, del] of weeks) {
-        additions += add
-        deletions += Math.abs(del) 
-      }
-  
-      return { additions, deletions }
+    for (const sha of shas) {
+        const res = await fetch(
+            `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+                    Accept: 'application/vnd.github+json',
+                    'X-GitHub-Api-Version': '2022-11-28',
+                },
+            }
+        )
+        if (!res.ok) continue
+        const data = await res.json() as { stats?: { additions: number; deletions: number } }
+        additions += data.stats?.additions ?? 0
+        deletions += data.stats?.deletions ?? 0
     }
-  
-    throw new Error('GitHub code_frequency still 202 after retries')
-  }
+
+    return { additions, deletions }
+}

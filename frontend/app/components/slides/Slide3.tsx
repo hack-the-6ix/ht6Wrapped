@@ -9,17 +9,18 @@ interface Slide3Props {
 
 function formatMinutes(totalMinutes: number) {
   const safeMinutes = Math.max(0, totalMinutes);
-  const hours = Math.floor(safeMinutes / 60) % 24;
+  const hours24 = Math.floor(safeMinutes / 60) % 24;
   const minutes = safeMinutes % 60;
-
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+  const ampm = hours24 < 12 ? "AM" : "PM";
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  return `${String(hours12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${ampm}`;
 }
 
 export default function Slide3({ peakCommitHourEst }: Slide3Props) {
   const animatedMinutes = useMotionValue(0);
   const targetMinutes = peakCommitHourEst === null ? 0 : peakCommitHourEst * 60;
   const timeLabel = useTransform(animatedMinutes, (value) =>
-    peakCommitHourEst === null ? "--:--" : formatMinutes(Math.round(value)),
+    peakCommitHourEst === null ? "--:-- --" : formatMinutes(Math.round(value)),
   );
 
   useEffect(() => {

@@ -16,12 +16,22 @@ export function computeStats(
   const totalCommits = commits.length
 
   let firstCommitAt: string | null = null
+  let lastCommitAt: string | null = null
   if (totalCommits > 0) {
     firstCommitAt = commits.reduce((earliest, c) =>
       c.authorDate < earliest ? c.authorDate : earliest,
       commits[0].authorDate,
     )
+    lastCommitAt = commits.reduce((latest, c) =>
+      c.authorDate > latest ? c.authorDate : latest,
+      commits[0].authorDate,
+    )
   }
+
+  // Repo lifespan in whole hours from first commit to last commit
+  const repoLifespanHours = firstCommitAt && lastCommitAt
+    ? Math.round((new Date(lastCommitAt).getTime() - new Date(firstCommitAt).getTime()) / 3_600_000)
+    : 0
 
   const histogram = new Array<number>(24).fill(0)
   for (const commit of commits) {
@@ -33,16 +43,12 @@ export function computeStats(
     ? histogram.indexOf(Math.max(...histogram))
     : null
 
-  // Count hour-slots in window with zero commits
-  let hoursWithoutCommits = 0
-  const windowStartZoned = toZonedTime(windowStart, TORONTO_TZ)
-  const windowEndZoned = toZonedTime(windowEnd, TORONTO_TZ)
-  const cursor = new Date(windowStartZoned)
-  cursor.setMinutes(0, 0, 0)
-  while (cursor <= windowEndZoned) {
-    if (histogram[cursor.getHours()] === 0) hoursWithoutCommits++
-    cursor.setHours(cursor.getHours() + 1)
+  const activeHours = new Set<string>()
+  for (const commit of commits) {
+    const d = toZonedTime(new Date(commit.authorDate), TORONTO_TZ)
+    activeHours.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}`)
   }
+  const hoursWithoutCommits = Math.max(0, repoLifespanHours - activeHours.size)
 
   const totalBytes = Object.values(languages).reduce((s, b) => s + b, 0)
   const languagesBytes = languages
@@ -70,6 +76,8 @@ export function computeStats(
   return {
     totalCommits,
     firstCommitAt,
+    lastCommitAt,
+    repoLifespanHours,
     peakCommitHourEst,
     commitHourHistogramEst: histogram,
     hoursWithoutCommits,

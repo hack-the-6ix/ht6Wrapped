@@ -1,18 +1,85 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { supabase } from '../lib/supabase'
-import { parseRepoUrl, listCommits, getCodeFrequency, getLanguages, getRepoMeta } from '../services/github'
-import { scrapeSubmission } from '../services/devpost'
+import { parseRepoUrl, listCommits, getCommitLineStats, getLanguages, getRepoMeta } from '../services/github'
 import { computeStats, computePercentiles } from '../services/analytics'
+import { getActivitiesForUser } from '../services/hackathon'
 
 export const wrappedRoute = new Hono()
 
+// Nov 21 2025 10:00 PM ET  →  Nov 23 2025 10:00 AM ET  (36 h)
+const HACKATHON_START = new Date('2025-11-21T22:00:00-05:00')
+const HACKATHON_END   = new Date('2025-11-23T10:00:00-05:00')
+
 const CreateWrappedSchema = z.object({
   projectId: z.string().uuid(),
-  displayName: z.string().min(1),
+  githubUsername: z.string().min(1),
   windowHours: z.number().int().min(1).max(168).optional().default(36),
-  devpostUrl: z.string().url().optional(),
+  allTime: z.boolean().optional().default(false),
+  email: z.string().optional(),
 })
+
+async function generateWrapped(
+  shareId: string,
+  owner: string,
+  repo: string,
+  windowStart: Date,
+  windowEnd: Date,
+  allTime: boolean,
+  githubUsername: string,
+  email?: string,
+) {
+  try {
+    const since = allTime ? undefined : windowStart.toISOString()
+    const until = allTime ? undefined : windowEnd.toISOString()
+
+    const [commits, languages, repoMeta] = await Promise.all([
+      listCommits(owner, repo, since, until, githubUsername),
+      getLanguages(owner, repo),
+      getRepoMeta(owner, repo),
+    ])
+
+    if (commits.length === 0) {
+      await supabase.from('wrapped_stats').update({ status: 'not_found' }).eq('id', shareId)
+      return
+    }
+
+    const codeFreq = await getCommitLineStats(owner, repo, commits.map(c => c.sha))
+    const baseStats = computeStats(commits, codeFreq, languages, repoMeta, windowStart, windowEnd)
+    const activitiesParticipated = email ? await getActivitiesForUser(email) : []
+    const percentiles = await computePercentiles(shareId, baseStats)
+
+    await supabase
+      .from('wrapped_stats')
+      .update({
+        status: 'done',
+        total_commits: baseStats.totalCommits,
+        first_commit_at: baseStats.firstCommitAt,
+        last_commit_at: baseStats.lastCommitAt,
+        repo_lifespan_hours: baseStats.repoLifespanHours,
+        peak_commit_hour_est: baseStats.peakCommitHourEst,
+        commit_hour_histogram_est: baseStats.commitHourHistogramEst,
+        hours_without_commits: baseStats.hoursWithoutCommits,
+        lines_added: baseStats.linesAdded,
+        lines_deleted: baseStats.linesDeleted,
+        languages_bytes: baseStats.languagesBytes,
+        languages_share: baseStats.languagesShare,
+        repo_size_kb: baseStats.repoSizeKb,
+        night_owl_score: baseStats.nightOwlScore,
+        early_bird_score: baseStats.earlyBirdScore,
+        commit_percentile: percentiles.commitPercentile,
+        language_percentiles: percentiles.languagePercentiles,
+        size_percentile: percentiles.sizePercentile,
+        activities_participated: activitiesParticipated,
+      })
+      .eq('id', shareId)
+  } catch {
+    await supabase
+      .from('wrapped_stats')
+      .update({ status: 'error' })
+      .eq('id', shareId)
+  }
+}
 
 wrappedRoute.post('/', async (c) => {
   let body: z.infer<typeof CreateWrappedSchema>
@@ -32,67 +99,64 @@ wrappedRoute.post('/', async (c) => {
     return c.json({ error: 'Project not found' }, 404)
   }
 
+  // Return existing result if already generated for this contributor
+  const { data: existing } = await supabase
+    .from('wrapped_stats')
+    .select('id')
+    .eq('project_id', body.projectId)
+    .eq('github_username', body.githubUsername)
+    .eq('status', 'done')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (existing) {
+    return c.json({ shareId: existing.id })
+  }
+
   const { owner, repo } = parseRepoUrl(project.repo_url)
-  const windowEnd = new Date()
-  const windowStart = new Date(windowEnd.getTime() - body.windowHours * 3_600_000)
-
-  const [commits, codeFreq, languages, repoMeta] = await Promise.all([
-    listCommits(owner, repo, windowStart.toISOString(), windowEnd.toISOString()),
-    getCodeFrequency(owner, repo),
-    getLanguages(owner, repo),
-    getRepoMeta(owner, repo),
-  ])
-
-  const baseStats = computeStats(commits, codeFreq, languages, repoMeta, windowStart, windowEnd)
-  const activitiesParticipated: string[] = []
+  const windowStart = body.allTime ? new Date(0) : HACKATHON_START
+  const windowEnd   = body.allTime ? new Date()  : HACKATHON_END
 
   const { data: inserted, error: insertError } = await supabase
     .from('wrapped_stats')
     .insert({
       project_id: project.id,
-      display_name: body.displayName,
+      display_name: body.githubUsername,
+      github_username: body.githubUsername,
       window_start: windowStart.toISOString(),
       window_end: windowEnd.toISOString(),
-      total_commits: baseStats.totalCommits,
-      first_commit_at: baseStats.firstCommitAt,
-      peak_commit_hour_est: baseStats.peakCommitHourEst,
-      commit_hour_histogram_est: baseStats.commitHourHistogramEst,
-      hours_without_commits: baseStats.hoursWithoutCommits,
-      lines_added: baseStats.linesAdded,
-      lines_deleted: baseStats.linesDeleted,
-      languages_bytes: baseStats.languagesBytes,
-      languages_share: baseStats.languagesShare,
-      repo_size_kb: baseStats.repoSizeKb,
-      night_owl_score: baseStats.nightOwlScore,
-      early_bird_score: baseStats.earlyBirdScore,
+      status: 'pending',
+      total_commits: 0,
+      first_commit_at: null,
+      peak_commit_hour_est: null,
+      commit_hour_histogram_est: [],
+      hours_without_commits: 0,
+      lines_added: 0,
+      lines_deleted: 0,
+      languages_bytes: {},
+      languages_share: {},
+      repo_size_kb: 0,
+      night_owl_score: 0,
+      early_bird_score: 0,
       commit_percentile: 0,
       language_percentiles: {},
       size_percentile: 0,
-      activities_participated: activitiesParticipated,
+      activities_participated: [],
     })
     .select('id')
     .single()
 
   if (insertError || !inserted) {
-    return c.json({ error: 'Failed to save wrapped stats', details: insertError?.message }, 500)
+    return c.json({ error: 'Failed to create wrapped job', details: insertError?.message }, 500)
   }
 
   const shareId = inserted.id as string
 
-  const percentiles = await computePercentiles(shareId, baseStats)
+  // Fire and forget — response returns immediately
+  generateWrapped(shareId, owner, repo, windowStart, windowEnd, body.allTime, body.githubUsername, body.email).catch(() => {})
 
-  await supabase
-    .from('wrapped_stats')
-    .update({
-      commit_percentile: percentiles.commitPercentile,
-      size_percentile: percentiles.sizePercentile,
-      language_percentiles: percentiles.languagePercentiles,
-    })
-    .eq('id', shareId)
-
-  const stats = { ...baseStats, ...percentiles, activitiesParticipated }
-
-  return c.json({ shareId, stats })
+  return c.json({ shareId })
 })
 
 wrappedRoute.get('/:shareId', async (c) => {
@@ -102,9 +166,12 @@ wrappedRoute.get('/:shareId', async (c) => {
     .from('wrapped_stats')
     .select(`
       id,
-      display_name,
+      status,
+      github_username,
       total_commits,
       first_commit_at,
+      last_commit_at,
+      repo_lifespan_hours,
       peak_commit_hour_est,
       commit_hour_histogram_est,
       hours_without_commits,
@@ -132,6 +199,18 @@ wrappedRoute.get('/:shareId', async (c) => {
     return c.json({ error: 'Not found' }, 404)
   }
 
+  if (data.status === 'pending') {
+    return c.json({ status: 'pending' })
+  }
+
+  if (data.status === 'not_found') {
+    return c.json({ status: 'not_found' }, 404)
+  }
+
+  if (data.status === 'error') {
+    return c.json({ error: 'Generation failed' }, 500)
+  }
+
   const projectRaw = data.projects as unknown
   const project = (Array.isArray(projectRaw) ? projectRaw[0] : projectRaw) as { id: string; name: string; repo_url: string } | null
   if (!project) {
@@ -139,8 +218,9 @@ wrappedRoute.get('/:shareId', async (c) => {
   }
 
   return c.json({
+    status: 'done',
     shareId: data.id,
-    displayName: data.display_name,
+    displayName: data.github_username,
     project: {
       id: project.id,
       name: project.name,
@@ -149,6 +229,8 @@ wrappedRoute.get('/:shareId', async (c) => {
     stats: {
       totalCommits: data.total_commits,
       firstCommitAt: data.first_commit_at,
+      lastCommitAt: data.last_commit_at,
+      repoLifespanHours: data.repo_lifespan_hours ?? 0,
       peakCommitHourEst: data.peak_commit_hour_est,
       commitHourHistogramEst: data.commit_hour_histogram_est,
       hoursWithoutCommits: data.hours_without_commits,

@@ -5,7 +5,12 @@ import Slide1 from "@/app/components/slides/Slide1";
 import Slide2 from "@/app/components/slides/Slide2";
 import Slide3 from "@/app/components/slides/Slide3";
 import Slide4 from "@/app/components/slides/Slide4";
-import SlideshowFrame from "@/app/components/slideshow/SlideshowFrame";
+import Slide5 from "@/app/components/slides/Slide5";
+import Slide6 from "@/app/components/slides/Slide6";
+import Slide7 from "@/app/components/slides/Slide7";
+import Slide8 from "@/app/components/slides/Slide8";
+import SlideshowControls from "@/app/components/slideshow/SlideshowControls";
+import SlideshowProgress from "@/app/components/slideshow/SlideshowProgress";
 
 interface WrappedData {
   shareId: string;
@@ -19,8 +24,12 @@ interface WrappedData {
     nightOwlScore: number;
     earlyBirdScore: number;
     firstCommitAt: string | null;
+    lastCommitAt: string | null;
+    repoLifespanHours: number;
     commitPercentile: number;
-    languages: Record<string, number>;
+    languagesShare: Record<string, number>;
+    languagePercentiles: Record<string, number>;
+    hoursWithoutCommits: number;
     repoSizeKb: number;
     activitiesParticipated: string[];
   };
@@ -41,28 +50,38 @@ export default function WrappedSlideshow({ data }: Props) {
       key="activities"
       activitiesParticipated={data.stats.activitiesParticipated}
     />,
+    <Slide5 key="languages" languagesShare={data.stats.languagesShare} />,
+    <Slide6 key="hours-idle" hoursWithoutCommits={data.stats.hoursWithoutCommits} />,
+    <Slide7 key="first-commit" firstCommitAt={data.stats.firstCommitAt} />,
+    <Slide8
+      key="summary"
+      displayName={data.displayName}
+      linesAdded={data.stats.linesAdded}
+      peakCommitHourEst={data.stats.peakCommitHourEst}
+      activitiesParticipated={data.stats.activitiesParticipated}
+      languagesShare={data.stats.languagesShare}
+      repoLifespanHours={data.stats.repoLifespanHours}
+      hoursWithoutCommits={data.stats.hoursWithoutCommits}
+      firstCommitAt={data.stats.firstCommitAt}
+    />,
   ];
 
   const total = slides.length;
 
   return (
-    <div className="flex min-h-[100svh] items-center justify-center bg-neutral-100 p-2.5 sm:min-h-screen sm:p-4">
-      <div
-        className="relative shadow-2xl"
-        style={{
-          width: "min(calc(100vw - 1rem), calc((100svh - 1rem) * 4 / 3), 800px)",
-          aspectRatio: "4/3",
-        }}
-      >
-        <SlideshowFrame
-          current={current}
-          total={total}
-          onPrev={() => setCurrent((c) => Math.max(0, c - 1))}
-          onNext={() => setCurrent((c) => Math.min(total - 1, c + 1))}
-        >
-          {slides[current]}
-        </SlideshowFrame>
+    <div className="relative h-[100svh] min-h-[100svh] w-screen overflow-hidden">
+      <div className="w-full h-full">
+        {slides[current]}
       </div>
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 sm:top-4">
+        <SlideshowProgress current={current} total={total} />
+      </div>
+      <SlideshowControls
+        onPrev={() => setCurrent((c) => Math.max(0, c - 1))}
+        onNext={() => setCurrent((c) => Math.min(total - 1, c + 1))}
+        prevDisabled={current === 0}
+        nextDisabled={current === total - 1}
+      />
     </div>
   );
 }

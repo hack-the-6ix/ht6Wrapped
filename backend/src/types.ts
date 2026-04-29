@@ -16,6 +16,8 @@ export interface RepoMeta {
 export interface WrappedStats {
   totalCommits: number
   firstCommitAt: string | null
+  lastCommitAt: string | null
+  repoLifespanHours: number
   peakCommitHourEst: number | null
   commitHourHistogramEst: number[]
   hoursWithoutCommits: number
