@@ -7,6 +7,8 @@ interface Slide6Props {
   hoursWithoutCommits: number;
 }
 
+const ease = [0.22, 1, 0.36, 1] as const;
+
 export default function Slide6({ hoursWithoutCommits }: Slide6Props) {
   const count = useMotionValue(0);
   const rounded = useTransform(count, (v) => String(Math.round(v)).padStart(3, "0"));
@@ -23,46 +25,80 @@ export default function Slide6({ hoursWithoutCommits }: Slide6Props) {
     <div
       className="relative w-full h-full overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, #0e1f3d 0%, #162e56 45%, #1a3660 75%, #102040 100%)",
+        background: "linear-gradient(135deg, #109187 0%, #423A95 100%)",
         containerType: "size",
       }}
     >
-      {/* Star-field dots */}
+      {/* Teal radial glow */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            radial-gradient(circle at 18% 22%, rgba(160,200,255,0.10) 0%, rgba(160,200,255,0) 28%),
-            radial-gradient(circle at 82% 14%, rgba(130,170,255,0.08) 0%, rgba(130,170,255,0) 22%),
-            radial-gradient(circle at 50% 80%, rgba(100,150,220,0.10) 0%, rgba(100,150,220,0) 32%)
+            radial-gradient(ellipse at 50% 34%, rgba(0,180,130,0.14) 0%, rgba(0,180,130,0) 50%),
+            radial-gradient(circle at 18% 74%, rgba(40,100,200,0.10) 0%, rgba(40,100,200,0) 32%)
           `,
         }}
         animate={{ opacity: [0.7, 1, 0.7] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* Floating sparkle dots */}
-      {[
-        { x: "14%", y: "12%" }, { x: "78%", y: "8%" }, { x: "90%", y: "38%" },
-        { x: "6%",  y: "55%" }, { x: "92%", y: "72%" }, { x: "32%", y: "88%" },
-        { x: "65%", y: "90%" },
-      ].map((p, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            left: p.x, top: p.y,
-            width: i % 2 === 0 ? "0.5cqw" : "0.35cqw",
-            height: i % 2 === 0 ? "0.5cqw" : "0.35cqw",
-            background: "rgba(200,220,255,0.6)",
-          }}
-          animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.3, 0.8] }}
-          transition={{ duration: 2.5 + i * 0.4, delay: i * 0.3, repeat: Infinity, ease: "easeInOut" }}
-        />
-      ))}
+      {/* Outdoor Lamp — left */}
+      <motion.img
+        src="/slides_figma_components/Outdoor Lamp.svg"
+        alt=""
+        className="absolute bottom-0 left-[3cqw] z-10 pointer-events-none"
+        style={{ height: "58cqh", filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.35))" }}
+        initial={{ opacity: 0, x: -18 }}
+        animate={{ opacity: 1, x: 0, y: [0, -4, 0] }}
+        transition={{
+          opacity: { duration: 0.8, delay: 0.2 },
+          x: { duration: 0.8, delay: 0.2, ease },
+          y: { duration: 6, delay: 1.5, repeat: Infinity, ease: "easeInOut" },
+        }}
+      />
 
-      {/* Content */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-[1.2cqh]">
+      {/* Candle — small decoration */}
+      <motion.img
+        src="/slides_figma_components/Candle 1.svg"
+        alt=""
+        className="absolute bottom-[2cqh] left-[20cqw] z-10 pointer-events-none"
+        style={{ height: "10cqh", filter: "drop-shadow(0 4px 12px rgba(255,180,60,0.22))" }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, y: [0, -3, 0] }}
+        transition={{
+          opacity: { duration: 0.7, delay: 0.5 },
+          y: { duration: 5, delay: 2.2, repeat: Infinity, ease: "easeInOut" },
+        }}
+      />
+
+      {/* Chair — right, behind cat */}
+      <motion.img
+        src="/slides_figma_components/Chair 2.svg"
+        alt=""
+        className="absolute bottom-0 right-[5cqw] z-10 pointer-events-none"
+        style={{ height: "40cqh", filter: "drop-shadow(0 12px 30px rgba(0,0,0,0.40))" }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.3, ease }}
+      />
+
+      {/* Cat — sitting in chair */}
+      <motion.img
+        src="/slides_figma_components/Cat.svg"
+        alt=""
+        className="absolute bottom-[20cqh] right-[4cqw] z-20 pointer-events-none"
+        style={{ height: "46cqh", filter: "drop-shadow(0 8px 24px rgba(80,0,120,0.35))" }}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1, y: [0, -5, 0] }}
+        transition={{
+          opacity: { duration: 0.8, delay: 0.4 },
+          scale: { duration: 0.8, delay: 0.4, ease },
+          y: { duration: 5.5, delay: 1.8, repeat: Infinity, ease: "easeInOut" },
+        }}
+      />
+
+      {/* Text — centered, above the cat visually */}
+      <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-[1cqh] pointer-events-none">
         <motion.p
           style={{
             fontFamily: "Inter, sans-serif",
@@ -73,7 +109,7 @@ export default function Slide6({ hoursWithoutCommits }: Slide6Props) {
           }}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.6, delay: 0.2, ease }}
         >
           You spent..
         </motion.p>
@@ -91,7 +127,7 @@ export default function Slide6({ hoursWithoutCommits }: Slide6Props) {
           }}
           initial={{ opacity: 0, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.8, delay: 0.35, ease }}
         >
           {rounded}
         </motion.span>
@@ -128,9 +164,9 @@ export default function Slide6({ hoursWithoutCommits }: Slide6Props) {
         </motion.p>
       </div>
 
-      {/* Bottom flavour text */}
+      {/* Bottom italic footnote */}
       <motion.p
-        className="absolute bottom-[5cqh] right-[5cqw] z-10"
+        className="absolute bottom-[4cqh] right-[5cqw] z-40"
         style={{
           fontFamily: "Inter, sans-serif",
           fontWeight: 400,

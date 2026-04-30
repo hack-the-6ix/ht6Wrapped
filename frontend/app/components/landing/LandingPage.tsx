@@ -28,6 +28,7 @@ const MOCK_STATS = {
   hoursWithoutCommits: 14,
   languagesShare: { TypeScript: 0.72, Python: 0.18, CSS: 0.10 } as Record<string, number>,
   firstCommitAt: "2026-04-27T02:34:00-04:00",
+  repoLifespanHours: 36,
 };
 
 const TOTAL_SLIDES = 8;
@@ -213,6 +214,7 @@ export default function LandingPage() {
       peakCommitHourEst={MOCK_STATS.peakCommitHourEst}
       activitiesParticipated={MOCK_STATS.activitiesParticipated}
       languagesShare={MOCK_STATS.languagesShare}
+      repoLifespanHours={MOCK_STATS.repoLifespanHours}
       hoursWithoutCommits={MOCK_STATS.hoursWithoutCommits}
       firstCommitAt={MOCK_STATS.firstCommitAt}
     />,
