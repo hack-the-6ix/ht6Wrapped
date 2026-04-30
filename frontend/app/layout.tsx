@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "HT6 Wrapped",
   description: "Conclusive stats for all at Hack the 6ix!",
+  icons: {
+    icon: "/favicon.jpeg",
+  },
 };
 
 export default function RootLayout({

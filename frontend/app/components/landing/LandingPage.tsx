@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import * as Popover from "@radix-ui/react-popover";
+import { ChevronDownIcon, MagnifyingGlassIcon, CheckIcon } from "@radix-ui/react-icons";
 import SlideshowControls from "@/app/components/slideshow/SlideshowControls";
 import SlideshowProgress from "@/app/components/slideshow/SlideshowProgress";
 import Slide1 from "@/app/components/slides/Slide1";
@@ -45,6 +47,10 @@ export default function LandingPage() {
   const [showForm, setShowForm] = useState(false);
   const [projectId, setProjectId] = useState("");
   const [githubUsername, setGithubUsername] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [projectSearch, setProjectSearch] = useState("");
+  const [projectOpen, setProjectOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("");
   const [error, setError] = useState("");
@@ -74,7 +80,11 @@ export default function LandingPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!projectId || !githubUsername.trim()) return;
+    if (!projectId || !githubUsername.trim() || !firstName.trim() || !lastName.trim()) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    setError("");
     setLoading(true);
     setLoadingStatus("Starting…");
     setError("");
@@ -138,34 +148,103 @@ export default function LandingPage() {
         ) : (
           <motion.form
             onSubmit={handleSubmit}
-            className="flex w-full max-w-[170px] flex-col items-center justify-center gap-1.5 sm:max-w-none sm:gap-2"
+            className="flex w-full max-w-[200px] flex-col items-center justify-center gap-2 sm:max-w-[240px] sm:gap-2.5"
             initial={{ opacity: 0, y: 12, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
+            {/* First + Last name row */}
+            <div className="flex w-full gap-1.5">
+              <input
+                type="text"
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-1/2 rounded-xl bg-white/95 px-3 py-2 text-[11px] font-medium text-gray-800 shadow-sm outline-none transition placeholder:text-gray-400 hover:bg-white focus:ring-2 focus:ring-emerald-400 disabled:opacity-50 sm:text-xs"
+                style={{ backdropFilter: "blur(6px)" }}
+                disabled={loading}
+              />
+              <input
+                type="text"
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-1/2 rounded-xl bg-white/95 px-3 py-2 text-[11px] font-medium text-gray-800 shadow-sm outline-none transition placeholder:text-gray-400 hover:bg-white focus:ring-2 focus:ring-emerald-400 disabled:opacity-50 sm:text-xs"
+                style={{ backdropFilter: "blur(6px)" }}
+                disabled={loading}
+              />
+            </div>
+
+            {/* Searchable project picker */}
             {projectsLoading ? (
               <p className="text-center text-[10px] text-white/60 sm:text-xs">Loading projects…</p>
             ) : projects.length === 0 ? (
               <p className="text-center text-[10px] text-white/60 sm:text-xs">No projects found</p>
             ) : (
-              <select
-                value={projectId}
-                onChange={(e) => setProjectId(e.target.value)}
-                className="w-full rounded-lg bg-white/90 px-3 py-1.5 text-[11px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:text-xs"
-                required
-                disabled={loading}
-              >
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
+              <Popover.Root open={projectOpen} onOpenChange={setProjectOpen}>
+                <Popover.Trigger
+                  type="button"
+                  disabled={loading}
+                  className="inline-flex w-full items-center justify-between rounded-xl bg-white/95 px-3.5 py-2 text-[11px] font-medium shadow-sm outline-none transition hover:bg-white focus:ring-2 focus:ring-emerald-400 disabled:opacity-50 sm:text-xs"
+                  style={{ backdropFilter: "blur(6px)", color: projectId ? "#1f2937" : "#9ca3af" }}
+                >
+                  <span className="truncate">
+                    {projectId ? projects.find((p) => p.id === projectId)?.name ?? "Select project" : "Select project"}
+                  </span>
+                  <ChevronDownIcon className="ml-2 shrink-0 text-gray-400" />
+                </Popover.Trigger>
+
+                <Popover.Portal>
+                  <Popover.Content
+                    sideOffset={6}
+                    align="start"
+                    className="z-50 w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-xl bg-white shadow-2xl outline-none"
+                    style={{ width: "var(--radix-popover-trigger-width)" }}
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                  >
+                    {/* Search input */}
+                    <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2">
+                      <MagnifyingGlassIcon className="shrink-0 text-gray-400" />
+                      <input
+                        autoFocus
+                        type="text"
+                        placeholder="Search projects…"
+                        value={projectSearch}
+                        onChange={(e) => setProjectSearch(e.target.value)}
+                        className="w-full bg-transparent text-[11px] text-gray-800 outline-none placeholder:text-gray-400 sm:text-xs"
+                      />
+                    </div>
+                    {/* Scrollable list — max 5 items visible */}
+                    <div className="max-h-[160px] overflow-y-auto overscroll-contain p-1">
+                      {projects
+                        .filter((p) => p.name.toLowerCase().includes(projectSearch.toLowerCase()))
+                        .map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => { setProjectId(p.id); setProjectOpen(false); setProjectSearch(""); }}
+                            className="flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-[11px] font-medium text-gray-800 transition hover:bg-emerald-50 hover:text-emerald-800 sm:text-xs"
+                          >
+                            <span>{p.name}</span>
+                            {p.id === projectId && <CheckIcon className="text-emerald-600" />}
+                          </button>
+                        ))}
+                      {projects.filter((p) => p.name.toLowerCase().includes(projectSearch.toLowerCase())).length === 0 && (
+                        <p className="px-3 py-2 text-[11px] text-gray-400 sm:text-xs">No results</p>
+                      )}
+                    </div>
+                  </Popover.Content>
+                </Popover.Portal>
+              </Popover.Root>
             )}
+
             <input
               type="text"
               placeholder="GitHub username"
               value={githubUsername}
               onChange={(e) => setGithubUsername(e.target.value)}
-              className="w-full rounded-lg bg-white/90 px-3 py-1.5 text-[11px] text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:text-xs"
+              className="w-full rounded-xl bg-white/95 px-3.5 py-2 text-[11px] font-medium text-gray-800 shadow-sm outline-none transition placeholder:text-gray-400 hover:bg-white focus:ring-2 focus:ring-emerald-400 disabled:opacity-50 sm:text-xs"
+              style={{ backdropFilter: "blur(6px)" }}
               required
               disabled={loading}
             />
@@ -173,10 +252,10 @@ export default function LandingPage() {
             <motion.button
               type="submit"
               disabled={loading || projects.length === 0}
-              className="mt-1 rounded-full px-5 py-1.5 text-[11px] font-semibold text-white disabled:opacity-60 sm:px-6 sm:text-xs"
-              style={{ background: "#4CA58A", boxShadow: "0 10px 24px rgba(32, 73, 62, 0.28)" }}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.98 }}
+              className="mt-0.5 w-full rounded-xl py-2 text-[11px] font-semibold text-white shadow-md disabled:opacity-60 sm:text-xs"
+              style={{ background: "#4CA58A", boxShadow: "0 8px 20px rgba(32, 73, 62, 0.32)" }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
             >
               {loading ? loadingStatus : "Go →"}
             </motion.button>

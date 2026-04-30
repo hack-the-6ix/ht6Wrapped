@@ -51,19 +51,16 @@ export default function Slide7({ firstCommitAt }: Slide7Props) {
     <div
       className="relative w-full h-full overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, #29648E 0%, #3D3589 100%)",
+        background: "#2a3580",
         containerType: "size",
       }}
     >
-      {/* Radial blue glow */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 38%, rgba(100,150,255,0.14) 0%, rgba(100,150,255,0) 55%)",
-        }}
-        animate={{ opacity: [0.6, 1, 0.6] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+      {/* Background SVG */}
+      <img
+        src="/slides_figma_components/slide7bg.svg"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        style={{ zIndex: 0 }}
       />
 
       {/* ── Ghost checkerboards (background, very low opacity) ── */}
@@ -316,6 +313,39 @@ export default function Slide7({ firstCommitAt }: Slide7Props) {
           </motion.p>
         )}
       </div>
+
+      {/* ── Candle — bottom center ── */}
+      <motion.div
+        className="absolute z-20 pointer-events-none"
+        style={{ bottom: "-2cqh", left: "50%", transform: "translateX(-50%)" }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.4, ease }}
+      >
+        {/* warm glow behind candle */}
+        <motion.div
+          className="absolute"
+          style={{
+            bottom: "30%",
+            left: "50%",
+            transform: "translate(-50%, 0)",
+            width: "18cqh",
+            height: "18cqh",
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(255,180,60,0.35) 0%, rgba(255,140,30,0) 70%)",
+            filter: "blur(8px)",
+          }}
+          animate={{ opacity: [0.7, 1, 0.7], scale: [0.95, 1.05, 0.95] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.img
+          src="/slides_figma_components/Candle 1.svg"
+          alt=""
+          style={{ height: "20cqh", position: "relative" }}
+          animate={{ y: [0, -3, 0] }}
+          transition={{ duration: 4, delay: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </motion.div>
 
       {/* ── "Happy First Commit!" — separated, lower on the slide ── */}
       {hasCommit && (

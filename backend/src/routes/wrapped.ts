@@ -7,9 +7,9 @@ import { getActivitiesForUser } from '../services/hackathon'
 
 export const wrappedRoute = new Hono()
 
-// Nov 21 2025 10:00 PM ET  →  Nov 23 2025 10:00 AM ET  (36 h)
-const HACKATHON_START = new Date('2025-11-21T22:00:00-05:00')
-const HACKATHON_END   = new Date('2025-11-23T10:00:00-05:00')
+// Jul 18 2025 10:00 PM ET  →  Jul 20 2025 9:30 AM ET
+const HACKATHON_START = new Date('2025-07-18T22:00:00-04:00')
+const HACKATHON_END   = new Date('2025-07-20T09:30:00-04:00')
 
 const CreateWrappedSchema = z.object({
   projectId: z.string().uuid(),
